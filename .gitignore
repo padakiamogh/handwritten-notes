@@ -1,0 +1,13 @@
+# Generated output: the pdf, the html preview, and per-job snapshots
+output/
+
+# Working files: downloads, transcripts, rendered diagrams, web page cache
+temp/
+
+# Downloaded fonts are fetched automatically at runtime
+assets/fonts/*.ttf
+
+__pycache__/
+*.pyc
+.venv/
+venv/

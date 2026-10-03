@@ -1,0 +1,22 @@
+# Handwritten PDF Study Notes Generator
+# Install with:  pip install -r requirements.txt
+
+yt-dlp
+openai-whisper
+pypdf
+
+# reportlab 5.x or newer: Preformatted / XPreformatted take a ParagraphStyle
+# in 5.x, whereas 3.x/4.x took fontName / fontSize keyword arguments.
+reportlab>=5.0
+
+markdown
+ollama
+requests
+trafilatura
+
+# --- optional: the web front end (webui/server.py) -------------------------
+# The CLI in main.py needs none of these. Install them only if you want the
+# browser interface.
+fastapi>=0.115
+uvicorn[standard]>=0.32
+python-multipart>=0.0.9

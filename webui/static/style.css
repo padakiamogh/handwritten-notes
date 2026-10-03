@@ -1,0 +1,506 @@
+/* Handwritten Notes - web front end
+
+   The six tokens are the ones the PDF already ships, so the app and its
+   output read as one object. RULE is the layout grid: everything vertical
+   is a multiple of 24px, the same interval the ruling uses on paper. */
+
+:root{
+  --paper:#fbfcfe;
+  --rule:#a8c8e8;
+  --ink:#1a2a6c;
+  --margin:#e06a6a;
+  --graphite:#5a6480;
+  --pencil:#c9d4e4;
+
+  --line:24px;
+  --rail:288px;
+  --gutter:24px;
+}
+
+*{box-sizing:border-box}
+
+/* The hidden attribute is only a UA-stylesheet hint (display:none). Any author
+   rule that sets display - .overlay and .field both do - silently overrides it,
+   which once left the full-screen preview overlay covering the whole app and
+   swallowing every click. This makes hidden win, always. */
+[hidden]{display:none !important}
+
+html{-webkit-text-size-adjust:100%}
+
+body{
+  margin:0;
+  min-height:100vh;
+  background:var(--paper);
+  color:var(--ink);
+  font:400 15px/var(--line) "IBM Plex Sans",-apple-system,"Segoe UI",sans-serif;
+  display:grid;
+  grid-template-columns:var(--rail) minmax(0,1fr);
+}
+
+/* ==================================================================
+   rail - the desk
+   ================================================================== */
+
+#rail{
+  border-right:1px solid var(--rule);
+  padding:calc(var(--line)*1.5) var(--gutter) calc(var(--line)*2);
+  display:flex;
+  flex-direction:column;
+  gap:calc(var(--line)*1.5);
+  position:sticky;
+  top:0;
+  height:100vh;
+  overflow-y:auto;
+}
+
+.wordmark h1{
+  margin:0;
+  font-family:Kalam,"Segoe Script",cursive;
+  font-weight:700;
+  font-size:33px;
+  line-height:calc(var(--line)*1.5);
+  color:var(--ink);
+}
+
+.wordmark .sub{
+  margin:calc(var(--line)*.25) 0 0;
+  font-size:13px;
+  line-height:var(--line);
+  color:var(--graphite);
+}
+
+.panel{display:flex; flex-direction:column; gap:12px}
+
+.tabs{display:flex; border-bottom:1px solid var(--rule)}
+
+.tab{
+  flex:1;
+  appearance:none;
+  border:0;
+  background:none;
+  font:inherit;
+  font-size:14px;
+  color:var(--graphite);
+  padding:6px 0 8px;
+  cursor:pointer;
+  border-bottom:2px solid transparent;
+  margin-bottom:-1px;
+}
+.tab:hover{color:var(--ink)}
+.tab.is-on{color:var(--ink); border-bottom-color:var(--ink); font-weight:500}
+.tab:focus-visible{outline:2px solid var(--ink); outline-offset:2px}
+
+.field{display:flex; flex-direction:column; gap:6px}
+
+.field label{
+  font-size:13px;
+  font-weight:500;
+  color:var(--graphite);
+}
+
+.field input[type="url"],
+.field input[type="text"]{
+  appearance:none;
+  font:inherit;
+  font-size:14px;
+  color:var(--ink);
+  background:rgba(255,255,255,.7);
+  border:1px solid var(--rule);
+  border-radius:0;
+  padding:8px 10px;
+  width:100%;
+}
+.field input::placeholder{color:var(--pencil)}
+.field input:focus{
+  outline:0;
+  border-color:var(--ink);
+  background:#fff;
+}
+
+.field input[type="file"]{
+  font:inherit;
+  font-size:13px;
+  color:var(--graphite);
+  width:100%;
+}
+.field input[type="file"]::file-selector-button{
+  appearance:none;
+  font:inherit;
+  font-size:13px;
+  color:var(--ink);
+  background:transparent;
+  border:1px solid var(--rule);
+  padding:6px 10px;
+  cursor:pointer;
+  margin-right:10px;
+}
+.field input[type="file"]::file-selector-button:hover{border-color:var(--ink)}
+
+.hint{
+  margin:0;
+  font-size:12.5px;
+  line-height:18px;
+  color:var(--graphite);
+}
+
+.begin{
+  appearance:none;
+  font:500 15px/var(--line) "IBM Plex Sans",sans-serif;
+  color:var(--paper);
+  background:var(--ink);
+  border:0;
+  border-radius:0;
+  padding:10px 16px;
+  cursor:pointer;
+  align-self:flex-start;
+}
+.begin:hover{background:#24357d}
+.begin:disabled{background:var(--pencil); cursor:not-allowed}
+.begin:focus-visible{outline:2px solid var(--ink); outline-offset:3px}
+
+.rail-error{
+  margin:0;
+  font-size:13px;
+  line-height:18px;
+  color:var(--margin);
+}
+
+/* --- job list --- */
+
+.jobs h2{
+  margin:0;
+  font-size:13px;
+  font-weight:500;
+  color:var(--graphite);
+  border-bottom:1px solid var(--rule);
+  padding-bottom:4px;
+}
+
+.job-list{
+  list-style:none;
+  margin:0;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+}
+.job-list li.empty{
+  font-size:13px;
+  color:var(--pencil);
+  line-height:var(--line);
+}
+.job-list li.job{
+  display:flex;
+  align-items:baseline;
+  gap:8px;
+  line-height:var(--line);
+  cursor:pointer;
+  border:0;
+  background:none;
+  font:inherit;
+  text-align:left;
+  color:var(--graphite);
+  width:100%;
+  padding:0;
+}
+.job-list li.job:hover,.job-list li.job.is-on{color:var(--ink)}
+.job-list li.job.is-on{font-weight:500}
+.job-list .job-mark{
+  flex:0 0 auto;
+  width:9px;
+  height:9px;
+  border:1px solid var(--rule);
+  border-radius:50%;
+  margin-top:8px;
+}
+.job-list .job-mark[data-s="running"]{
+  border-color:var(--ink);
+  background:var(--ink);
+  animation:pulse 1.4s ease-in-out infinite;
+}
+.job-list .job-mark[data-s="waiting"]{border-color:var(--margin); background:var(--margin)}
+.job-list .job-mark[data-s="done"]{border-color:var(--ink); background:var(--ink)}
+.job-list .job-mark[data-s="failed"],
+.job-list .job-mark[data-s="cancelled"]{border-color:var(--pencil)}
+.job-list .job-name{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.rail-foot{
+  margin-top:auto;
+  padding-top:12px;
+  border-top:1px solid var(--rule);
+  font-size:12.5px;
+  line-height:18px;
+  color:var(--graphite);
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.dot{
+  width:8px; height:8px; border-radius:50%;
+  border:1px solid var(--pencil);
+  flex:0 0 auto;
+}
+.dot[data-ok="true"]{background:var(--ink); border-color:var(--ink)}
+.dot[data-ok="false"]{background:var(--margin); border-color:var(--margin)}
+
+/* ==================================================================
+   page - ruled on the same grid it prints
+   ================================================================== */
+
+#page{
+  padding:calc(var(--line)*2) var(--gutter) calc(var(--line)*4);
+  min-width:0;
+}
+
+.sheet{
+  max-width:46rem;
+  margin:0 auto;
+  position:relative;
+  background-image:repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(var(--line) - 1px),
+    var(--rule) calc(var(--line) - 1px),
+    var(--rule) var(--line)
+  );
+}
+
+/* the red margin, 18px left of the text column, as in the PDF */
+.sheet::before{
+  content:"";
+  position:absolute;
+  top:0; bottom:0; left:64px; width:1px;
+  background:var(--margin);
+  opacity:.85;
+}
+
+.sheet > *{position:relative; margin-left:80px; margin-right:0}
+
+.sheet-head{margin-bottom:calc(var(--line)*.5)}
+.sheet-head h2{
+  margin:0;
+  font-family:Kalam,"Segoe Script",cursive;
+  font-weight:700;
+  font-size:26px;
+  line-height:var(--line);
+}
+.meta{
+  margin:0;
+  font-size:13px;
+  line-height:var(--line);
+  color:var(--graphite);
+}
+
+/* --- progress spine --- */
+
+.spine{
+  list-style:none;
+  margin:0 0 calc(var(--line)*.5);
+  padding:0;
+  border-left:1px solid var(--pencil);
+  margin-left:80px;
+}
+.spine li{
+  position:relative;
+  line-height:var(--line);
+  font-size:14px;
+  color:var(--pencil);
+  padding-left:24px;
+}
+.spine li::before{
+  content:"";
+  position:absolute;
+  left:-5px; top:9px;
+  width:9px; height:9px;
+  border-radius:50%;
+  border:1px solid var(--pencil);
+  background:var(--paper);
+}
+.spine li[data-s="active"]{
+  color:var(--ink);
+  font-weight:500;
+}
+.spine li[data-s="active"]::before{
+  border-color:var(--ink);
+  background:var(--ink);
+  box-shadow:0 0 0 3px rgba(26,42,108,.14);
+}
+.spine li[data-s="done"]{color:var(--graphite)}
+.spine li[data-s="done"]::before{border-color:var(--rule); background:var(--rule)}
+
+/* --- consent gate --- */
+
+.gate{
+  border:1px solid var(--margin);
+  background:rgba(224,106,106,.05);
+  padding:calc(var(--line)*.5) 16px calc(var(--line)*.5);
+  margin-bottom:calc(var(--line)*.5);
+  margin-right:0;
+}
+.gate-label{
+  margin:0;
+  font-size:12.5px;
+  font-weight:600;
+  color:var(--margin);
+  line-height:var(--line);
+}
+.gate-question{
+  margin:0 0 12px;
+  font-size:14.5px;
+  line-height:var(--line);
+  color:var(--ink);
+  max-width:44ch;
+}
+.gate-urls{
+  list-style:none;
+  margin:0 0 12px;
+  padding:0;
+  font-size:12.5px;
+  line-height:18px;
+  color:var(--graphite);
+  max-height:96px;
+  overflow-y:auto;
+}
+.gate-urls li{
+  padding:2px 0 2px 14px;
+  border-left:1px solid var(--rule);
+  margin-bottom:4px;
+  word-break:break-all;
+}
+.gate-actions{display:flex; gap:10px}
+.choice{
+  appearance:none;
+  font:500 14px/20px "IBM Plex Sans",sans-serif;
+  color:var(--paper);
+  background:var(--ink);
+  border:0;
+  border-radius:0;
+  padding:8px 16px;
+  cursor:pointer;
+  text-decoration:none;
+  display:inline-block;
+}
+.choice:hover{background:#24357d}
+.choice:focus-visible{outline:2px solid var(--ink); outline-offset:3px}
+.choice-quiet{
+  color:var(--ink);
+  background:transparent;
+  border:1px solid var(--rule);
+}
+.choice-quiet:hover{background:rgba(168,200,232,.2); border-color:var(--ink)}
+.gate-note{
+  margin:12px 0 0;
+  font-size:12px;
+  line-height:18px;
+  color:var(--graphite);
+}
+
+/* --- the log --- */
+
+.log{
+  margin:0;
+  padding:0;
+  font:13px/var(--line) "IBM Plex Sans",sans-serif;
+  color:var(--ink);
+  background:transparent;
+  border:0;
+  white-space:pre-wrap;
+  word-break:break-word;
+  max-height:52vh;
+  overflow-y:auto;
+}
+.log .t-muted{color:var(--graphite)}
+.log .t-ok{color:var(--ink); font-weight:500}
+.log .t-bad{color:var(--margin)}
+
+/* --- deliverables --- */
+
+.deliver{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:calc(var(--line)*.5);
+  margin-right:0;
+}
+.deliver-link{
+  display:flex;
+  flex-direction:column;
+  border:1px solid var(--rule);
+  padding:6px 14px 8px;
+  text-decoration:none;
+  color:var(--ink);
+  background:rgba(255,255,255,.6);
+  min-width:150px;
+}
+.deliver-link:hover{border-color:var(--ink); background:#fff}
+.deliver-name{font-weight:600; font-size:14.5px; line-height:var(--line)}
+.deliver-detail{font-size:12px; line-height:18px; color:var(--graphite)}
+
+.failed{
+  margin-top:calc(var(--line)*.5);
+  margin-right:0;
+  padding-left:14px;
+  border-left:2px solid var(--margin);
+}
+.failed-label{
+  margin:0;
+  font-size:12.5px;
+  font-weight:600;
+  color:var(--margin);
+  line-height:var(--line);
+}
+.failed p{margin:0 0 12px; font-size:14px; line-height:var(--line); max-width:52ch}
+
+/* ==================================================================
+   preview overlay
+   ================================================================== */
+
+.overlay{
+  position:fixed; inset:0;
+  background:rgba(251,252,254,.96);
+  display:flex;
+  align-items:stretch;
+  justify-content:center;
+  padding:calc(var(--line)*2) var(--gutter);
+  z-index:20;
+}
+.overlay-box{
+  display:flex;
+  flex-direction:column;
+  width:min(46rem,100%);
+  max-width:100%;
+}
+.overlay-title{
+  margin:0 0 12px;
+  font-family:Kalam,cursive;
+  font-weight:700;
+  font-size:22px;
+  line-height:var(--line);
+  color:var(--ink);
+}
+#preview-frame{
+  flex:1;
+  width:100%;
+  border:1px solid var(--rule);
+  background:#fff;
+}
+.overlay-actions{display:flex; gap:10px; margin-top:12px}
+
+@media (max-width:860px){
+  body{grid-template-columns:1fr}
+  #rail{
+    position:static;
+    height:auto;
+    border-right:0;
+    border-bottom:1px solid var(--rule);
+  }
+  #page{padding-top:var(--gutter)}
+  .sheet > *{margin-left:56px}
+  .sheet::before{left:40px}
+  .spine{margin-left:56px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important; transition:none !important}
+}

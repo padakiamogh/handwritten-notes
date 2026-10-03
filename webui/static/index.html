@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Handwritten Notes</title>
+<link rel="icon" href="/favicon.ico" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<!-- ============ desk rail ============ -->
+<aside id="rail">
+  <header class="wordmark">
+    <h1>Handwritten<br>Notes</h1>
+    <p class="sub">from a lecture, a file, or a question</p>
+  </header>
+
+  <section class="panel">
+    <div class="tabs" role="tablist">
+      <button class="tab is-on" data-mode="youtube" role="tab">YouTube</button>
+      <button class="tab" data-mode="topic" role="tab">Topic</button>
+      <button class="tab" data-mode="upload" role="tab">File</button>
+    </div>
+
+    <div class="field" data-for="youtube">
+      <label for="yt">Link or playlist</label>
+      <input id="yt" type="url" placeholder="https://youtube.com/watch?v=..." spellcheck="false">
+      <p class="hint">Audio is downloaded, then transcribed locally.</p>
+    </div>
+
+    <div class="field" data-for="topic" hidden>
+      <label for="topic">What should the notes cover?</label>
+      <input id="topic" type="text" placeholder="e.g. the water cycle" spellcheck="true">
+      <p class="hint">You will be asked before anything is searched or read.</p>
+    </div>
+
+    <div class="field" data-for="upload" hidden>
+      <label for="file">Media or document</label>
+      <input id="file" type="file"
+             accept=".mp3,.wav,.mp4,.m4a,.mkv,.webm,.mov,.flac,.ogg,.pdf,.txt,.md">
+      <p class="hint" id="file-name">No file chosen yet.</p>
+    </div>
+
+    <button id="begin" class="begin">Begin</button>
+    <p id="rail-error" class="rail-error" hidden></p>
+  </section>
+
+  <section class="panel jobs">
+    <h2>Jobs</h2>
+    <ul id="job-list" class="job-list"><li class="empty">Nothing yet.</li></ul>
+  </section>
+
+  <footer class="rail-foot">
+    <span id="health-dot" class="dot"></span>
+    <span id="health-text">checking tools…</span>
+  </footer>
+</aside>
+
+<!-- ============ the page ============ -->
+<main id="page">
+  <div class="sheet" id="sheet">
+    <div class="sheet-head">
+      <h2 id="job-source">Handwritten Notes</h2>
+      <p id="job-meta" class="meta">Pick a source on the left to begin.</p>
+    </div>
+
+    <!-- progress spine: the pipeline is a real sequence, so it gets a spine -->
+    <ol class="spine" id="spine"></ol>
+
+    <!-- consent: a decision, never a default -->
+    <section class="gate" id="gate" hidden>
+      <p class="gate-label" id="gate-label">Permission needed</p>
+      <p class="gate-question" id="gate-question"></p>
+      <ul class="gate-urls" id="gate-urls" hidden></ul>
+      <div class="gate-actions">
+        <button id="gate-yes" class="choice">Allow</button>
+        <button id="gate-no" class="choice choice-quiet">Decline</button>
+      </div>
+      <p class="gate-note" id="gate-note">Declining is the default and always safe.</p>
+    </section>
+
+    <!-- the log: ink appearing line by line -->
+    <pre class="log" id="log" aria-live="polite"></pre>
+
+    <!-- deliverables -->
+    <section class="deliver" id="deliver" hidden>
+      <a id="dl-pdf" class="deliver-link" href="#" target="_blank" rel="noopener">
+        <span class="deliver-name">PDF</span>
+        <span class="deliver-detail" id="pdf-detail"></span>
+      </a>
+      <a id="dl-html" class="deliver-link" href="#" target="_blank" rel="noopener">
+        <span class="deliver-name">Read in browser</span>
+        <span class="deliver-detail" id="html-detail"></span>
+      </a>
+    </section>
+
+    <section class="failed" id="failed" hidden>
+      <p class="failed-label">Stopped</p>
+      <p id="failed-text"></p>
+      <button id="cancel" class="choice choice-quiet" hidden>Cancel job</button>
+    </section>
+  </div>
+</main>
+
+<div id="overlay" class="overlay" hidden>
+  <div class="overlay-box">
+    <p class="overlay-title">Read the notes</p>
+    <iframe id="preview-frame" title="Generated notes"></iframe>
+    <div class="overlay-actions">
+      <a id="overlay-pdf" class="choice" href="#" target="_blank" rel="noopener">Open the PDF</a>
+      <button id="overlay-close" class="choice choice-quiet">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
