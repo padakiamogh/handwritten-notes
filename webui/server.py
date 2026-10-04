@@ -517,7 +517,9 @@ def health() -> dict:
 def _ollama_ready() -> bool:
     try:
         import requests  # noqa: PLC0415
-        response = requests.get("http://localhost:11434/api/tags", timeout=2)
+        # A cold ollama answers /api/tags in about 2.3s, so the old 2s timeout
+        # reported a perfectly healthy server as missing.
+        response = requests.get("http://localhost:11434/api/tags", timeout=10)
         models = [m.get("name", "") for m in response.json().get("models", [])]
         return any(name.startswith("llama3") for name in models)
     except Exception:                                   # noqa: BLE001
@@ -684,9 +686,65 @@ app.mount("/files", StaticFiles(directory=str(TEMP_DIR)), name="files")
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 
+def _port_is_busy(port: int) -> bool:
+    """True if something is already accepting connections on this port."""
+    import socket  # noqa: PLC0415
+
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
+        probe.settimeout(1)
+        return probe.connect_ex(("127.0.0.1", port)) == 0
+
+
+def _report_port_conflict(port: int) -> None:
+    print()
+    print("=" * 62)
+    print("  Could not start")
+    print("=" * 62)
+    print()
+    print(f"  Port {port} is already in use.")
+    print()
+    print("  Most likely an earlier copy of this server is still running.")
+    print("  Find it, then stop it:")
+    print()
+    print(f"    Get-NetTCPConnection -LocalPort {port} -State Listen |")
+    print("      Select-Object OwningProcess")
+    print("    Stop-Process -Id <that PID> -Force")
+    print()
+    print("  Or just use a different port:")
+    print(f"    $env:NOTES_WEB_PORT = {port + 1}; python webui/server.py")
+    print()
+
+
 if __name__ == "__main__":
     import uvicorn  # noqa: PLC0415
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     port = int(os.environ.get("NOTES_WEB_PORT", "8000"))
-    uvicorn.run(app, host="127.0.0.1", port=port, log_level="warning")
+
+    # Checked before launching rather than caught afterwards: uvicorn swallows
+    # the bind error internally and exits with code 3, so an except clause never
+    # sees it and the user gets a raw winerror instead of an explanation.
+    if _port_is_busy(port):
+        _report_port_conflict(port)
+        raise SystemExit(1)
+
+    # uvicorn's log level is kept at "warning" so per-request lines do not
+    # interleave with the pipeline output in this terminal. That silence means
+    # there is nothing at all on screen until a job finishes, which reads as a
+    # hang, so the start and stop are announced here instead.
+    print()
+    print("=" * 62)
+    print("  Handwritten Notes - web front end")
+    print("=" * 62)
+    print()
+    print(f"  Open:  http://127.0.0.1:{port}")
+    print("  Stop:  Ctrl+C")
+    print()
+    print("  The first job downloads the handwritten font and renders")
+    print("  diagrams, so it can take a little longer than later ones.")
+    print(flush=True)
+
+    try:
+        uvicorn.run(app, host="127.0.0.1", port=port, log_level="warning")
+    except KeyboardInterrupt:
+        print("\n  Stopped.")
