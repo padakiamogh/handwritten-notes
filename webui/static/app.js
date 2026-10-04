@@ -32,6 +32,8 @@ const el = {
   failedText: $("failed-text"),
   cancel: $("cancel"),
   jobList: $("job-list"),
+  sourceList: $("source-list"),
+  sourceCount: $("source-count"),
   healthDot: $("health-dot"),
   healthText: $("health-text"),
   overlay: $("overlay"),
@@ -268,9 +270,103 @@ async function refreshJobs() {
     const data = await (await fetch("/api/jobs")).json();
     state.jobs = data.jobs || [];
     renderJobList();
+    renderSources();
   } catch (err) {
     /* the list is a convenience; a failure here must not break the page */
   }
+}
+
+/* ----------------------------------------------------------- sources */
+
+/* NotebookLM shows the sources of a notebook as cards. Here a run is the
+   unit, so each card is one run: what it was, and how far it got. */
+
+const SOURCE_ICON = {
+  youtube: '<rect x="2" y="5" width="20" height="14" rx="4"/>'
+    + '<path d="M10 9.5l5 2.5-5 2.5z" class="fill"/>',
+  topic: '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/>',
+  upload: '<path d="M6 2h8l4 4v16H6z"/><path d="M14 2v4h4" class="stroke"/>',
+};
+
+const SOURCE_NAME = { youtube: "YouTube", topic: "Topic", upload: "File" };
+
+function sourceState(job) {
+  if (job.status === "running") return job.stageLabel || "working";
+  if (job.status === "waiting") return "waiting for you";
+  if (job.status === "done") {
+    const pdf = job.artifacts && job.artifacts.pdf;
+    return pdf && pdf.pages ? `${pdf.pages} pages` : "ready";
+  }
+  if (job.status === "failed") return "stopped";
+  if (job.status === "cancelled") return "cancelled";
+  return job.status;
+}
+
+function titleFor(job) {
+  const raw = job.source || "";
+  const name = raw.split(/[\\/]/).pop();
+  if (name && /\.[a-z0-9]{2,5}$/i.test(name)) return name;
+  if (/^https?:/i.test(raw)) {
+    try {
+      const url = new URL(raw);
+      const id = url.searchParams.get("v");
+      return id ? `youtube.com/watch?v=${id}` : url.hostname.replace(/^www\./, "");
+    } catch (err) {
+      return raw;
+    }
+  }
+  return raw || "(upload)";
+}
+
+function renderSources() {
+  el.sourceList.textContent = "";
+
+  if (!state.jobs.length) {
+    const empty = document.createElement("li");
+    empty.className = "empty";
+    empty.textContent = "No sources yet. Add one below to start a notebook.";
+    el.sourceList.appendChild(empty);
+    el.sourceCount.textContent = "";
+    return;
+  }
+
+  el.sourceCount.textContent = `${state.jobs.length} source${state.jobs.length === 1 ? "" : "s"}`;
+
+  state.jobs.slice(0, 12).forEach((job) => {
+    const item = document.createElement("li");
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "source" + (job.id === state.jobId ? " is-on" : "");
+    button.dataset.kind = job.kind || "upload";
+    button.dataset.status = job.status || "";
+
+    const icon = document.createElement("span");
+    icon.className = "source-icon";
+    icon.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${
+      SOURCE_ICON[job.kind] || SOURCE_ICON.upload}</svg>`;
+
+    const text = document.createElement("span");
+    text.className = "source-text";
+
+    const title = document.createElement("span");
+    title.className = "source-title";
+    title.textContent = titleFor(job);
+
+    const sub = document.createElement("span");
+    sub.className = "source-sub";
+    sub.textContent = SOURCE_NAME[job.kind] || "Source";
+
+    const status = document.createElement("span");
+    status.className = "source-state";
+    status.textContent = sourceState(job);
+
+    text.append(title, sub, status);
+    button.append(icon, text);
+    button.title = job.source || "(upload)";
+    button.addEventListener("click", () => attach(job.id, job.source));
+    item.appendChild(button);
+    el.sourceList.appendChild(item);
+  });
 }
 
 /* --------------------------------------------------------------- events */
@@ -295,7 +391,7 @@ function describeMeta(snap) {
     return pdf && pdf.pages ? `${pdf.pages} pages ready` : "ready";
   }
   if (snap.status === "failed" || snap.status === "cancelled") return snap.error || "stopped";
-  return "Pick a source on the left to begin.";
+  return "Add a source below to begin.";
 }
 
 function handle(event) {
@@ -326,10 +422,12 @@ function handle(event) {
       state.pendingKey = event.pending.key;
       renderGate(event.pending);
       el.jobMeta.textContent = "waiting for your decision";
+      refreshJobs();
       break;
 
     case "resumed":
       el.jobMeta.textContent = "working…";
+      refreshJobs();
       break;
 
     case "artifact":
@@ -396,6 +494,7 @@ function attach(jobId, source) {
   stream.onerror = () => stream.close();
 
   renderJobList();
+  renderSources();
 }
 
 /* ---------------------------------------------------------------- start */

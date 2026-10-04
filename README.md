@@ -159,14 +159,28 @@ source to work from, so the job stops and says so rather than carrying on.
 
 ### Layout
 
-- **Left rail**: pick a source (YouTube / topic / file upload), start a job, see
-  recent jobs. The footer reports whether Ollama, FFmpeg and `mmdc` are present.
-- **The page**: a progress spine over live output, the consent gate when one is
-  pending, and the PDF plus a browser preview when the job finishes.
+Shaped like NotebookLM, because that is what this actually is: a set of sources
+attached to a notebook that you then ask questions of.
 
-It is styled from the same six colours the PDF already uses (paper, rule, ink,
-margin, graphite, pencil) on the same 24pt grid, so the app and its output read
-as one object.
+- **Top bar** carries the sparkle wordmark and a tool health chip (Ollama,
+  FFmpeg, `mmdc`).
+- **Left rail** lists past runs as notebooks.
+- **Sources** is a row of cards. Each run becomes one card showing what it was,
+  its type, and its live state, so an older job is one click away.
+- **The thread** shows the open run: its progress spine, the consent gate when
+  one is pending, the live log, and the finished PDF.
+- **The composer** is one pill at the bottom. The three source types sit above it
+  as segmented pills; the send button is a blue circle.
+
+The chrome wears Google's palette (`#0b57d0`, Material greys, Figtree standing
+in for Google Sans, 28px radii). The paper identity is not thrown away - it
+lives in the output, which is still Kalam on ruled pages.
+
+Two notes on the palette. Google's own greys were measured rather than assumed:
+`#80868b` is 3.49:1 on white and fails WCAG AA at 12px, so the muted step here is
+`#5f6368` (6.05:1) with hierarchy coming from `#3c4043` above it. The amber used
+for "waiting for you" is darkened to `#b06000` for the same reason. Every text
+pair in the interface is at or above 4.5:1.
 
 ---
 
